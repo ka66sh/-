@@ -1,0 +1,254 @@
+/* 정부 상황실 브리핑 대시보드 (PROMPT.md §10.1)
+   절제된 색, 숫자 가독성 최우선. 색은 CSS 변수로 관리한다. */
+
+:root {
+  --bg: #0e1116;
+  --panel: #161b22;
+  --panel-2: #1c232c;
+  --border: #2a323d;
+  --text: #e6edf3;
+  --muted: #8b98a5;
+  --accent: #4b8bbe;
+  --accent-soft: #1d3346;
+  --good: #3fa66a;
+  --bad: #d3614f;
+  --warn: #c9a227;
+  --font: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+:root[data-theme="light"] {
+  --bg: #f3f5f7;
+  --panel: #ffffff;
+  --panel-2: #eceff3;
+  --border: #d3d9e0;
+  --text: #121820;
+  --muted: #5d6b7a;
+  --accent: #28628f;
+  --accent-soft: #dce8f2;
+  --good: #1f7a46;
+  --bad: #b23d2a;
+  --warn: #8a6d05;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+body { overflow: hidden; }
+
+/* 숫자 가독성 최우선 */
+.num, .topbar__date, .metric__value, table { font-variant-numeric: tabular-nums; }
+
+#app {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+}
+
+/* ── 상단 바 ─────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar__identity { min-width: 180px; }
+.topbar__nation { font-size: 16px; font-weight: 600; }
+.topbar__regime { font-size: 12px; color: var(--muted); }
+
+.topbar__clock { display: flex; align-items: center; gap: 10px; }
+.topbar__date { font-size: 15px; font-weight: 600; min-width: 150px; }
+
+.speed { display: flex; gap: 4px; }
+.speed button {
+  min-width: 38px;
+  padding: 4px 8px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.speed button:hover { border-color: var(--accent); }
+.speed button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.topbar__metrics {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  justify-content: flex-end;
+}
+
+.metric {
+  min-width: 92px;
+  padding: 2px 8px;
+  border-left: 2px solid var(--border);
+}
+.metric__label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.metric__value { font-size: 15px; font-weight: 600; }
+.metric__delta { font-size: 11px; color: var(--muted); }
+.metric__delta.up { color: var(--good); }
+.metric__delta.down { color: var(--bad); }
+
+.pause-flag {
+  padding: 2px 8px;
+  border: 1px solid var(--warn);
+  border-radius: 4px;
+  color: var(--warn);
+  font-size: 12px;
+}
+.pause-flag[hidden] { display: none; }
+
+/* ── 본문 3열 ────────────────────────────────────────────── */
+.body {
+  display: grid;
+  grid-template-columns: 184px minmax(0, 1fr) 300px;
+  min-height: 0;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 8px;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+.nav button {
+  padding: 7px 10px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.nav button:hover { background: var(--panel-2); }
+.nav button[aria-current="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.main { padding: 16px; overflow-y: auto; min-width: 0; }
+
+.news {
+  padding: 10px 12px;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+}
+.news h2 { margin: 0 0 8px; font-size: 13px; color: var(--muted); font-weight: 600; }
+.news__empty { color: var(--muted); font-size: 12px; }
+.news__item {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12.5px;
+}
+.news__when { color: var(--muted); font-size: 11px; }
+.news__item.good .news__headline { color: var(--good); }
+.news__item.bad .news__headline { color: var(--bad); }
+
+/* ── 카드·표 ─────────────────────────────────────────────── */
+.card {
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.card h1 { margin: 0 0 4px; font-size: 18px; }
+.card h2 { margin: 0 0 8px; font-size: 14px; }
+.card p { margin: 0 0 8px; color: var(--muted); }
+.card ul { margin: 4px 0 0 18px; padding: 0; color: var(--muted); }
+.card li { margin: 2px 0; }
+
+.pending-note {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.row + .row { margin-top: 8px; }
+
+button.action {
+  padding: 6px 12px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+button.action:hover { border-color: var(--accent); }
+button.action.primary { background: var(--accent-soft); border-color: var(--accent); }
+
+.slot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+}
+.slot__name { width: 92px; font-weight: 600; font-size: 13px; }
+.slot__info { flex: 1 1 auto; color: var(--muted); font-size: 12px; }
+
+.status { font-size: 12px; color: var(--muted); min-height: 18px; }
+.status.ok { color: var(--good); }
+.status.err { color: var(--bad); }
+
+/* ── 반응형 (§10.4) ──────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .body { grid-template-columns: 160px minmax(0, 1fr); }
+  .news { grid-column: 1 / -1; border-left: none; border-top: 1px solid var(--border); max-height: 180px; }
+}
+
+@media (max-width: 720px) {
+  .body { grid-template-columns: minmax(0, 1fr); }
+  .nav {
+    flex-direction: row;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .nav button { white-space: nowrap; }
+
+  /* 폭 360px에서도 가로 스크롤이 생기지 않게 상단 바를 접는다 (§10.4) */
+  .topbar { gap: 6px 10px; padding: 8px 10px; }
+  .topbar__identity { min-width: 0; flex: 1 1 100%; }
+  .topbar__clock { flex-wrap: wrap; row-gap: 6px; }
+  .topbar__date { min-width: 0; font-size: 14px; }
+  .speed button { min-width: 34px; padding: 4px 6px; }
+  .topbar__metrics { justify-content: flex-start; gap: 4px 10px; }
+  .metric { min-width: 78px; padding: 2px 6px; }
+  .main { padding: 12px; }
+  .card { padding: 12px; }
+}
